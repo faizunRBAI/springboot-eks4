@@ -23,11 +23,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 /**
  * REST API for the {@link Item} domain.
  *
- * <p>The controller is registered only when a datasource is present: the
- * {@code ItemService} bean depends on {@code ItemRepository}, which depends on
- * Spring Data JPA, which is auto-configured only when a datasource URL is set.
- * When no database is configured, requests to these endpoints return 503 via
- * the optional-injection guard below.
+ * <p>The service is always present, but its repository exists only when a
+ * datasource is configured — Spring Data JPA is switched off otherwise, and
+ * this application must boot without a database (HealthEndpointsTest enforces
+ * it). When no database is configured, these endpoints return 503 via the
+ * availability guard below.
  */
 @RestController
 @RequestMapping("/api/items")
@@ -42,7 +42,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<?> list() {
-        if (service == null) {
+        if (service == null || !service.isAvailable()) {
             return noDatabaseResponse();
         }
         List<Item> items = service.findAll();
@@ -51,7 +51,7 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {
-        if (service == null) {
+        if (service == null || !service.isAvailable()) {
             return noDatabaseResponse();
         }
         return ResponseEntity.ok(service.findById(id));
@@ -59,7 +59,7 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, String> body) {
-        if (service == null) {
+        if (service == null || !service.isAvailable()) {
             return noDatabaseResponse();
         }
         String name = body.get("name");
@@ -76,7 +76,7 @@ public class ItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        if (service == null) {
+        if (service == null || !service.isAvailable()) {
             return noDatabaseResponse();
         }
         String name = body.get("name");
@@ -88,7 +88,7 @@ public class ItemController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service == null) {
+        if (service == null || !service.isAvailable()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
         }
         service.delete(id);
