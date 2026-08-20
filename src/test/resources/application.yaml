@@ -1,0 +1,17 @@
+# Test-scoped application properties.
+#
+# Tests run without a database: there is no SPRING_DATASOURCE_URL set in CI
+# and no embedded DB on the classpath. Explicitly excluding all data-tier
+# auto-configurations here is more reliable than the EnvironmentPostProcessor
+# alone, because @SpringBootTest loads the full context BEFORE the post-processor
+# can suppress the JPA bootstrap in Spring Boot 3.
+#
+# This file is test-classpath only and never ships in the production jar.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
