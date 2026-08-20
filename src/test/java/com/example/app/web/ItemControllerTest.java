@@ -35,6 +35,11 @@ class ItemControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // The controller asks the service whether a database is configured
+        // before touching it, and a Mockito mock answers false by default —
+        // which would turn every one of these tests into a 503. These tests
+        // exercise the WITH-database paths, so the mock must say so.
+        Mockito.when(itemService.isAvailable()).thenReturn(true);
         sampleItem = new Item("Widget");
         // Reflectively set the generated id so assertions can reference it.
         var idField = Item.class.getDeclaredField("id");
